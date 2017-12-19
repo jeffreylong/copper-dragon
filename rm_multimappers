@@ -1,0 +1,48 @@
+#!/usr/bin/perl -w
+
+my $r;
+while($r = <STDIN>)
+{
+chomp($r);
+unless($r=~/^\@/){last;}
+print $r, "\n";
+}
+
+my @old;
+my @a;
+
+@old = split("\t",$r);
+
+while ($r = <STDIN> ) {
+chomp($r);
+@a = split("\t",$r);
+if($a[4]<3){next;}
+# don't match old line, print
+unless( ($a[0] eq $old[0]) & ($a[3] ne $old[3]) & match_seq($a[9],$old[9]) & match_qual($a[10],$old[10]) ){print join("\t",@old), "\n";}
+
+@old=@a;
+}
+unless( ($a[0] eq $old[0]) & ($a[3] ne $old[3]) & match_seq($a[9],$old[9]) & match_qual($a[10],$old[10]) ){print join("\t",@old), "\n";}
+
+
+
+sub match_seq
+{
+my($aa,$bb)=@_;
+if($aa eq $bb){return 1;}
+$aa=~s/[a-z]/[A-Z]/g;
+$bb=~tr/ACGTN/TGCAN/;
+$bb=reverse($bb);
+if($aa eq $bb){return 1;}
+else{return 0;}
+}
+
+sub match_qual
+{
+my($aa,$bb)=@_;
+if($aa eq $bb){return 1;}
+$bb=reverse($bb);
+if($aa eq $bb){return 1;}
+else{return 0;}
+}
+

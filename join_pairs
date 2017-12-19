@@ -1,0 +1,161 @@
+#!/usr/bin/perl -w
+
+my $old=<STDIN>;
+chomp($old);
+my @aa=split("\t",$old);
+my $old_entry=$aa[3];
+my $old_chr=$a[0];
+my @bl=();
+unshift(@bl,$old);
+
+while(my $r=<STDIN>)
+{
+chomp($r);
+my @aa=split("\t",$r);
+
+# if old matches, append to array
+unless(match($aa[3],$old_entry))
+{
+if(same_chr(@bl)){
+print merge_block(@bl), "\n";
+}
+@bl=();
+}
+unshift(@bl,$r);
+$old_entry=$aa[3];
+$old_chr=$aa[0];
+}
+print merge_block(@bl), "\n";
+
+
+sub merge_block 
+{
+ my(@in)=@_;
+ if(scalar(@in)==1){return $in[0];}
+ else {return merge_one_pair($in[0],$in[1]);}
+}
+
+
+sub same_chr
+{
+my(@in)=@_;
+if(scalar(@in)==1){return 1;}
+my @aaa=split("\t",$bl[0]);
+my @bbb=split("\t",$bl[1]);
+if($aaa[0] eq $bbb[0]){return 1;}
+else{return 0;}
+}
+
+
+sub match
+{
+my($ss,$tt)=@_;
+$ss=~s/\/[12]//;
+$tt=~s/\/[12]//;
+if($ss eq $tt){return 1;}
+else{return 0;}
+}
+
+sub merge_one_pair
+{
+   my ($L,$R) = @_;
+   my @a_L     = split( /[\s\t]+/, $L );
+   my @a_R     = split( /[\s\t]+/, $R );
+   my $orient = $a_R[5];   
+   if($a_L[1] > $a_R[1])
+   {
+      my @tmp=@a_R;
+      @a_R=@a_L;
+      @a_L=@tmp;
+      my $tmp=$R;
+      $R=$L;
+      $L=$tmp;
+   }
+
+
+   my $rt=$a_L[0]."\t";
+
+   $id=$a_L[3]."-SEP-".$a_R[3];
+   $thickStart=$a_L[2]-10;
+   $thickEnd=$a_R[1]+10;
+
+   my $b_sizes=$a_L[10].$a_R[10]; 
+
+   $b_starts=$a_L[11]; 
+   @R_starts=split( /,/,$a_R[11]);
+
+   foreach $s (@R_starts)
+   {
+
+      $s=$s+($a_R[1]-$a_L[1]);
+      $b_starts= $b_starts.$s.",";
+
+   }
+   @tmp=split( /,/, $b_starts );
+   $b_cnt=$#tmp+1;
+
+   if($thickStart>$thickEnd){$thickStart=$a_L[1]; $thickEnd=$a_L[1];}
+   
+   ($b_cnt,$b_sizes,$b_starts)=collapse_exons($b_sizes,$b_starts);
+
+   if($a_L[2]>$a_R[2]){$a_R[2]=$a_L[2];}   
+
+   $rt=$rt.$a_L[1]."\t".$a_R[2]."\t$id"."\t".$a_L[4]."\t".$orient."\t".$thickStart."\t".$thickEnd."\t";
+   $rt=$rt."0"."\t$b_cnt\t".$b_sizes."\t".$b_starts;
+   
+
+   return $rt;
+}
+
+sub collapse_exons
+{
+my($lens,$starts)=@_;
+
+my @ll=split(",",$lens);
+my @ss=split(",",$starts);
+
+# sort on starts
+my @I = sort { $ss[$a] <=> $ss[$b] } 0..$#ss;
+@ll=@ll[@I];
+@ss=@ss[@I];
+
+# collapse overlapers
+my $i=0;
+my $j;
+while ($i<(scalar(@ll)-1))
+{
+  ($j,$ll[$i])=exon_overlap($ll[$i],$ll[$i+1],$ss[$i],$ss[$i+1],$i);
+  if($j==$i)
+  { # need to dump next entry
+    @ll=(@ll[0..$i],@ll[$i+2..scalar(@ll)-1]);
+    @ss=(@ss[0..$i],@ss[$i+2..scalar(@ss)-1]);
+  }
+  ++$i;
+}
+return(scalar(@ll),join(",",@ll).",",join(",",@ss).",");
+
+}
+
+sub exon_overlap
+{
+my($l1,$l2,$s1,$s2,$i)=@_;
+if( $s2<($s1+$l1) ) { #have overlap
+return($i,max($s2-$s1+$l2,$l1));
+}
+else{return($i+1,$l1);}
+}
+
+sub max {
+my($aa,$bb)=@_;
+if($aa>$bb)
+{
+return $aa;
+}
+else
+{
+return $bb;
+}
+}
+
+
+

@@ -1,0 +1,28 @@
+#!/usr/bin/perl -w
+
+my $r=<STDIN>;
+
+chomp($r);
+
+my @old=split("\t",$r);;
+unless($old[3]=~/^[0-9]+$/){$old[3]=1;}
+my $growing_count=$old[3];
+
+while ($r = <STDIN> ) {
+chomp($r);
+my @a = split("\t",$r);
+unless($a[3]=~/^[0-9]+$/){$a[3]=1;}
+
+if( ($a[0] eq $old[0])&($a[1] eq $old[1])&($a[2] eq $old[2])&($a[5] eq $old[5])&($a[10] eq $old[10])&($a[11] eq $old[11]) ) {
+$growing_count+=$a[3];
+}
+else {$old[3]=$growing_count; print join("\t",@old), "\n"; $growing_count=$a[3]; }
+
+@old = @a;
+
+}
+$old[3]=$growing_count;
+
+print join("\t",@old), "\n";
+exit;
+

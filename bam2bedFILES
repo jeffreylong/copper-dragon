@@ -1,0 +1,23 @@
+#!/usr/bin/perl -w
+
+my $usage='bam2bedDIR inupt_list_of_bams output_bed_dir'."\n"."make sure list of bams has unique IDs!!\n";
+unless(scalar(@ARGV)==2){print $usage; exit;}
+
+unless(-e $ARGV[0]){print STDERR "no input set of files\n"; exit;}
+unless(-e "logs"){`mkdir logs`;}
+unless(-e $ARGV[1]){`mkdir $ARGV[1]`;}
+
+open(F,$ARGV[0]) or die "no input file\n";
+while(my $r=<F>)
+{
+chomp($r);
+
+$r=~/.*\/(.*?)$/;
+my $sample=$1;
+
+unless($sample =~ /\.bam$/){next;}
+
+#print "bsub -qq logs/bam2bed.$sample.ss -o logs/bam2bed.$sample.oo -e logs/bam2bed.$sample.ee -m 8 -n 2 -q bigmem 'bam2bed $ARGV[0]/$sample $ARGV[1]/$sample.bed'\n";
+`bsub -qq logs/bam2bed.$sample.ss -o logs/bam2bed.$sample.oo -e logs/bam2bed.$sample.ee -m 8 -n 2 -q bigmem 'bam2bed $r $ARGV[1]/$sample.bed'`;
+
+}

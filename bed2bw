@@ -1,0 +1,15 @@
+#!/usr/bin/perl -w
+
+my $usage='bed2bw bed bw hg19|hg38'."\n";
+unless(scalar(@ARGV)==3){print $usage; exit;}
+unless(($ARGV[2] eq 'hg19')|($ARGV[2] eq 'hg38')){print "wrong genome\n"; exit;}
+
+my $rrr=rand();
+$rrr=substr($rrr,2,6);
+
+#`cat $ARGV[0]|in_hg38 > /scratch/tmp/temp.$rrr.bed; bed2wig.simple.pl /scratch/tmp/temp.$rrr.bed > /scratch/tmp/temp.$rrr.bedgraph; wigToBigWig /scratch/tmp/temp.$rrr.bedgraph /home/tbabak/o$verlap/chrom_sizes.hg38 $ARGV[1]`;
+
+`bed2wig.simple.pl $ARGV[0] > /scratch/tmp/temp.$rrr.bedgraph; wigToBigWig /scratch/tmp/temp.$rrr.bedgraph /home/tbabak/overlap/chrom_sizes.$ARGV[2] $ARGV[1]`;
+`rm /scratch/tmp/temp.$rrr.bed`;
+`rm /scratch/tmp/temp.$rrr.bedgraph`;
+exit;

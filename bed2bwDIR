@@ -1,0 +1,23 @@
+#!/usr/bin/perl -w
+
+my $usage='bed2bwDIR inupt_dir_w_beds output_bw_dir hg19|hg38'."\n";
+unless(scalar(@ARGV)==3){print $usage; exit;}
+unless(($ARGV[2] eq 'hg19')|($ARGV[2] eq 'hg38')){print "wrong genome\n"; exit;}
+
+unless(-e $ARGV[0]){print STDERR "no input dir\n"; exit;}
+unless(-e "logs"){`mkdir logs`;}
+unless(-e $ARGV[1]){`mkdir $ARGV[1]`;}
+
+opendir(D,$ARGV[0]) or die "no input dir\n";
+my @dd=readdir(D);
+
+for(my $i=0; $i<scalar(@dd); ++$i)
+{
+if($dd[$i]=~/^\.+$/){next;}
+my $sample=$dd[$i];
+unless($sample =~ /\.bed$/){next;}
+
+#print "bsub -q logs/bed2bw.$sample.ss -o logs/bed2bw.$sample.oo -e logs/bed2bw.$sample.ee -m 8 -n 2 -P bigmem 'bed2bw $ARGV[0]/$sample $ARGV[1]/$sample.bw'\n";
+`bsub -qq logs/bed2bw.$sample.ss -o logs/bed2bw.$sample.oo -e logs/bed2bw.$sample.ee -m 8 -n 2 -q hugemem 'bed2bw $ARGV[0]/$sample $ARGV[1]/$sample.bw $ARGV[2]'`;
+
+}

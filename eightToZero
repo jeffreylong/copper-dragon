@@ -1,0 +1,9 @@
+#!/usr/bin/perl -w
+
+
+while (my $r = <STDIN> ) {
+chomp($r);
+my @a = split("\t",$r);
+$a[8]=0;
+print join("\t",@a), "\n";
+}

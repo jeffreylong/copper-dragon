@@ -1,0 +1,17 @@
+#!/usr/bin/perl -w
+
+
+while (my $r = <STDIN> ) {
+chomp($r);
+my @a = split("\t",$r);
+$a[0]=~s/MT/M/;
+if($a[0]=~/^[0-9XYM]/){$a[0]="chr".$a[0];}
+unless($a[0]=~/^chr[0-9XYM]+$/){next;}
+
+
+unless($a[10]=~/\,$/){$a[10].=",";}
+unless($a[11]=~/\,$/){$a[11].=",";}
+
+print join("\t",@a), "\n";
+}
+

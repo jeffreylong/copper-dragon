@@ -1,0 +1,21 @@
+#!/usr/bin/perl -w
+
+my $usage='bam2bedDIR inupt_dir_w_bams output_bed_dir'."\n";
+unless(scalar(@ARGV)==2){print $usage; exit;}
+
+unless(-e $ARGV[0]){print STDERR "no input dir\n"; exit;}
+unless(-e "logs"){`mkdir logs`;}
+unless(-e $ARGV[1]){`mkdir $ARGV[1]`;}
+
+opendir(D,$ARGV[0]) or die "no input dir\n";
+my @dd=readdir(D);
+
+for(my $i=0; $i<scalar(@dd); ++$i)
+{
+if($dd[$i]=~/^\.+$/){next;}
+my $sample=$dd[$i];
+unless($sample =~ /\.bam$/){next;}
+
+`bsub -qq logs/bam2bed.$sample.ss -o logs/bam2bed.$sample.oo -e logs/bam2bed.$sample.ee -m 8 -n 2 -q bigmem 'bam2bed $ARGV[0]/$sample $ARGV[1]/$sample.bed'`;
+
+}
